@@ -10,6 +10,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => Counter()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const MyApp(),
     ),
@@ -27,62 +28,119 @@ class Counter with ChangeNotifier {
   }
 }
 
+/// A simple provider to manage app theme state
+class ThemeProvider with ChangeNotifier {
+  bool _isDarkMode = false;
+
+  bool get isDarkMode => _isDarkMode;
+  
+  ThemeData get currentTheme => _isDarkMode 
+      ? ThemeData.dark(useMaterial3: true)
+      : ThemeData.light(useMaterial3: true);
+
+  void toggleTheme() {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+  }
+}
+
+/// The app's root widget
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyHomePage(),
+    // Using the ThemeProvider to get the current theme
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Flutter Demo',
+          theme: themeProvider.currentTheme,
+          home: const MyHomePage(title: 'Flutter Provider Demo'),
+        );
+      },
     );
   }
 }
 
+/// A page that consumes both Counter and ThemeProvider
 class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Example'),
+        title: Text(title),
+        actions: [
+          // Theme toggle button
+          IconButton(
+            icon: Icon(
+              context.watch<ThemeProvider>().isDarkMode 
+                  ? Icons.light_mode 
+                  : Icons.dark_mode,
+            ),
+            onPressed: () {
+              // Toggle the theme
+              context.read<ThemeProvider>().toggleTheme();
+            },
+          ),
+        ],
       ),
-      body: const Center(
+      body: Center(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('You have pushed the button this many times:'),
-
-            /// Extracted as a separate widget for performance optimization.
-            /// As a separate widget, it will rebuild independently from [MyHomePage].
-            ///
-            /// This is totally optional (and rarely needed).
-            /// Similarly, we could also use [Consumer] or [Selector].
-            Count(),
+          children: [
+            const Text(
+              'You have pushed the button this many times:',
+            ),
+            // Consuming the Counter provider
+            Text(
+              '${context.watch<Counter>().count}',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 40),
+            // Showing the current theme status
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                return Text(
+                  'Current theme: ${themeProvider.isDarkMode ? 'Dark' : 'Light'}',
+                  style: Theme.of(context).textTheme.titleMedium,
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            // Example of how to use different access methods
+            Text(
+              'This demo shows three different ways to access providers:',
+              style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text('1. context.watch<T>() - rebuilds when provider changes'),
+                  Text('2. context.read<T>() - one-time access, no rebuilds'),
+                  Text('3. Consumer<T> - more granular rebuilds'),
+                ],
+              ),
+            ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        /// Calls `context.read` instead of `context.watch` so that it does not rebuild
-        /// when [Counter] changes.
-        onPressed: () => context.read<Counter>().increment(),
+        onPressed: () {
+          // Incrementing the counter
+          context.read<Counter>().increment();
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
-    );
-  }
-}
-
-class Count extends StatelessWidget {
-  const Count({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      /// Calls `context.watch` to make [Count] rebuild when [Counter] changes.
-      '${context.watch<Counter>().count}',
-      style: Theme.of(context).textTheme.headlineMedium,
     );
   }
 }
