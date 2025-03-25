@@ -33,10 +33,11 @@ class ThemeProvider with ChangeNotifier {
   bool _isDarkMode = false;
 
   bool get isDarkMode => _isDarkMode;
-  
-  ThemeData get currentTheme => _isDarkMode 
-      ? ThemeData.dark(useMaterial3: true)
-      : ThemeData.light(useMaterial3: true);
+
+  ThemeData get currentTheme =>
+      _isDarkMode
+          ? ThemeData.dark(useMaterial3: true)
+          : ThemeData.light(useMaterial3: true);
 
   void toggleTheme() {
     _isDarkMode = !_isDarkMode;
@@ -78,8 +79,8 @@ class MyHomePage extends StatelessWidget {
           // Theme toggle button
           IconButton(
             icon: Icon(
-              context.watch<ThemeProvider>().isDarkMode 
-                  ? Icons.light_mode 
+              context.watch<ThemeProvider>().isDarkMode
+                  ? Icons.light_mode
                   : Icons.dark_mode,
             ),
             onPressed: () {
@@ -93,9 +94,7 @@ class MyHomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'You have pushed the button this many times:',
-            ),
+            const Text('You have pushed the button this many times:'),
             // Consuming the Counter provider
             Text(
               '${context.watch<Counter>().count}',
@@ -110,25 +109,6 @@ class MyHomePage extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 );
               },
-            ),
-            const SizedBox(height: 20),
-            // Example of how to use different access methods
-            Text(
-              'This demo shows three different ways to access providers:',
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text('1. context.watch<T>() - rebuilds when provider changes'),
-                  Text('2. context.read<T>() - one-time access, no rebuilds'),
-                  Text('3. Consumer<T> - more granular rebuilds'),
-                ],
-              ),
             ),
           ],
         ),
