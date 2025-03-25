@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,9 +16,7 @@ void main() {
   );
 }
 
-/// Mix-in [DiagnosticableTreeMixin] to have access to [debugFillProperties] for the devtool
-// ignore: prefer_mixin
-class Counter with ChangeNotifier, DiagnosticableTreeMixin {
+class Counter with ChangeNotifier {
   int _count = 0;
 
   int get count => _count;
@@ -27,13 +24,6 @@ class Counter with ChangeNotifier, DiagnosticableTreeMixin {
   void increment() {
     _count++;
     notifyListeners();
-  }
-
-  /// Makes `Counter` readable inside the devtools by listing all of its properties
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(IntProperty('count', count));
   }
 }
 
@@ -74,8 +64,6 @@ class MyHomePage extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        key: const Key('increment_floatingActionButton'),
-
         /// Calls `context.read` instead of `context.watch` so that it does not rebuild
         /// when [Counter] changes.
         onPressed: () => context.read<Counter>().increment(),
@@ -94,7 +82,6 @@ class Count extends StatelessWidget {
     return Text(
       /// Calls `context.watch` to make [Count] rebuild when [Counter] changes.
       '${context.watch<Counter>().count}',
-      key: const Key('counterState'),
       style: Theme.of(context).textTheme.headlineMedium,
     );
   }
